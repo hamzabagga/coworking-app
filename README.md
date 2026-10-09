@@ -52,7 +52,7 @@ Installation
 Prérequis : Node.js (version LTS) et MongoDB en local.
 
 bash
-git clone https://github.com/hamzabagga/coworking-management.git
+git clone https://github.com/hamzabagga/coworking-app
 cd coworking-management
 Backend
 bash
