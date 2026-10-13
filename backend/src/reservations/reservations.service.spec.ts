@@ -21,6 +21,7 @@ describe('ReservationsService', () => {
     userId: new Types.ObjectId().toString(),
     email: 'member@test.dev',
     role: Role.Member,
+    sessionId: 'test-session',
   };
   const admin: AuthUser = { ...member, role: Role.Admin };
 

@@ -6,6 +6,8 @@ export interface AuthUser {
   userId: string;
   email: string;
   role: Role;
+  // id de la session (refresh token) qui a émis l'access token
+  sessionId: string;
 }
 
 export const CurrentUser = createParamDecorator(

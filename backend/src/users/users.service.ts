@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
 import { Model } from 'mongoose';
+import { Session } from '../auth/schemas/session.schema';
 import { Role } from '../common/enums/role.enum';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -25,6 +26,7 @@ export class UsersService implements OnApplicationBootstrap {
 
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Session.name) private readonly sessionModel: Model<Session>,
     private readonly config: ConfigService,
   ) {}
 
@@ -103,7 +105,13 @@ export class UsersService implements OnApplicationBootstrap {
     return user;
   }
 
-  async changePassword(id: string, dto: ChangePasswordDto): Promise<void> {
+  // changement de mot de passe : les autres appareils sont déconnectés,
+  // la session courante (currentSessionId) reste ouverte
+  async changePassword(
+    id: string,
+    dto: ChangePasswordDto,
+    currentSessionId?: string,
+  ): Promise<void> {
     const user = await this.userModel.findById(id).select('+password').exec();
     if (!user) throw new NotFoundException('Utilisateur introuvable');
 
@@ -114,10 +122,28 @@ export class UsersService implements OnApplicationBootstrap {
 
     user.password = await bcrypt.hash(dto.newPassword, SALT_ROUNDS);
     await user.save();
+    await this.revokeSessions(id, currentSessionId);
   }
 
   async remove(id: string): Promise<void> {
     const result = await this.userModel.findByIdAndDelete(id).exec();
     if (!result) throw new NotFoundException('Utilisateur introuvable');
+    await this.revokeSessions(id);
+  }
+
+  // invalide les refresh tokens (et donc les access tokens) de l'utilisateur
+  async revokeSessions(userId: string, exceptSessionId?: string) {
+    await this.sessionModel
+      .deleteMany({
+        user: userId,
+        ...(exceptSessionId && { jti: { $ne: exceptSessionId } }),
+      })
+      .exec();
+  }
+
+  sessionExists(userId: string, sessionId: string): Promise<boolean> {
+    return this.sessionModel
+      .exists({ user: userId, jti: sessionId })
+      .then(Boolean);
   }
 }

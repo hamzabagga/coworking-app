@@ -13,6 +13,7 @@ import { UsersService } from '../../users/users.service';
 export interface JwtPayload {
   sub: string;
   email: string;
+  sid: string;
 }
 
 // guard global : toutes les routes exigent un token sauf celles marquées @Public()
@@ -47,14 +48,25 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Token invalide ou expiré');
     }
 
-    // on relit l'utilisateur en base : un compte désactivé ou un rôle modifié
-    // est pris en compte immédiatement
-    const user = await this.usersService.findActiveById(payload.sub);
+    // on relit l'utilisateur et sa session en base : un compte désactivé,
+    // un rôle modifié ou une déconnexion sont pris en compte immédiatement
+    const [user, sessionOpen] = await Promise.all([
+      this.usersService.findActiveById(payload.sub),
+      this.usersService.sessionExists(payload.sub, payload.sid),
+    ]);
     if (!user) {
       throw new UnauthorizedException('Compte introuvable ou désactivé');
     }
+    if (!sessionOpen) {
+      throw new UnauthorizedException('Session expirée, reconnectez-vous');
+    }
 
-    request.user = { userId: user.id, email: user.email, role: user.role };
+    request.user = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      sessionId: payload.sid,
+    };
     return true;
   }
 }

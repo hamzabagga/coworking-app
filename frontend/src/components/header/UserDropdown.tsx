@@ -213,8 +213,7 @@ export default function UserDropdown() {
           type="button"
           onClick={() => {
             closeDropdown();
-            logout();
-            navigate("/signin", { replace: true });
+            void logout().then(() => navigate("/signin", { replace: true }));
           }}
           className="group mt-3 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
         >

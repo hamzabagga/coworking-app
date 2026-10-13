@@ -8,8 +8,12 @@ async function bootstrap() {
   // toutes les routes sont servies sous /api (ex. /api/auth/login)
   app.setGlobalPrefix('api');
 
-  // autorise le frontend à appeler l'API
-  app.enableCors({ origin: process.env.CORS_ORIGIN ?? true });
+  // autorise le frontend à appeler l'API ; credentials : envoi du cookie
+  // contenant le refresh token
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN ?? true,
+    credentials: true,
+  });
 
   // valide et convertit automatiquement les body / query selon les DTO
   app.useGlobalPipes(

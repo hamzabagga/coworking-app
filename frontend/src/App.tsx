@@ -3,6 +3,7 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import AppLayout from "./layout/AppLayout";
 import SignIn from "./pages/AuthPages/SignIn";
+import SignUp from "./pages/AuthPages/SignUp";
 import Home from "./pages/Dashboard/Home";
 import Members from "./pages/Members";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -33,6 +34,7 @@ export default function App() {
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />

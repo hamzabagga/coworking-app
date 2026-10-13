@@ -54,3 +54,11 @@ export interface LoginResponse {
   accessToken: string;
   user: User;
 }
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+}

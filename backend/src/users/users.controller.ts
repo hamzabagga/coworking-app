@@ -45,7 +45,7 @@ export class UsersController {
     @CurrentUser() user: AuthUser,
     @Body() dto: ChangePasswordDto,
   ) {
-    return this.usersService.changePassword(user.userId, dto);
+    return this.usersService.changePassword(user.userId, dto, user.sessionId);
   }
 
   // ---- gestion des utilisateurs (admin) ----

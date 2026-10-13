@@ -15,16 +15,29 @@ Variables `.env` :
 | Variable | Rôle |
 | --- | --- |
 | `MONGO_URI` | adresse MongoDB |
-| `JWT_SECRET` | clé de signature des tokens (mettre une valeur longue et aléatoire) |
-| `JWT_EXPIRES_IN` | durée de validité du token (défaut `1d`) |
+| `JWT_SECRET` | clé de signature des access tokens (mettre une valeur longue et aléatoire) |
+| `JWT_EXPIRES_IN` | durée de validité de l'access token (défaut `15m`) |
+| `JWT_REFRESH_SECRET` | clé de signature des refresh tokens (différente de `JWT_SECRET`) |
+| `JWT_REFRESH_EXPIRES_IN` | durée de validité du refresh token (défaut `7d`) |
 | `PORT` | port HTTP (défaut `3000`) |
 | `CORS_ORIGIN` | origine autorisée du frontend (défaut : toutes) |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | compte admin créé au démarrage s'il n'existe pas |
 
 ## Authentification
 
-`POST /api/auth/login` renvoie `{ accessToken, user }`. Envoyer ensuite le header
-`Authorization: Bearer <accessToken>`. Toutes les routes exigent un token sauf celles marquées « public ».
+`POST /api/auth/login` (ou `/register`) renvoie `{ accessToken, user }` et dépose le
+refresh token dans un cookie `refresh_token` (httpOnly, SameSite=Strict, limité à `/api/auth`,
+`Secure` en production). Envoyer ensuite le header `Authorization: Bearer <accessToken>`.
+Toutes les routes exigent un token sauf celles marquées « public ».
+
+- L'access token dure 15 min. Quand il expire, `POST /api/auth/refresh` (avec le cookie)
+  renvoie un nouvel access token et un nouveau refresh token : l'ancien est invalidé (rotation).
+- Chaque connexion crée une session en base (collection `sessions`). Réutiliser un refresh token
+  déjà échangé ferme toutes les sessions de l'utilisateur (token probablement volé).
+- `POST /api/auth/logout` ferme la session : l'access token associé est refusé immédiatement.
+- Changer son mot de passe déconnecte les autres appareils ; supprimer ou désactiver un compte
+  bloque toutes ses sessions.
+- Côté client, appeler l'API avec `credentials` (axios : `withCredentials: true`).
 
 Deux rôles : `member` (par défaut à l'inscription) et `admin`.
 
@@ -36,6 +49,8 @@ Deux rôles : `member` (par défaut à l'inscription) et `admin`.
 | --- | --- | --- |
 | POST | `/api/auth/register` | `{ email, password (8+), firstName, lastName, phone? }` |
 | POST | `/api/auth/login` | `{ email, password }` |
+| POST | `/api/auth/refresh` | cookie `refresh_token` → nouvelle paire de tokens |
+| POST | `/api/auth/logout` | cookie `refresh_token` → ferme la session |
 
 ### Utilisateurs
 

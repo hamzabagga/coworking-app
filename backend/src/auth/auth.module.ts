@@ -17,7 +17,7 @@ import { AuthService } from './auth.service';
         secret: config.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
           expiresIn: (config.get<string>('JWT_EXPIRES_IN') ??
-            '1d') as NonNullable<JwtModuleOptions['signOptions']>['expiresIn'],
+            '15m') as NonNullable<JwtModuleOptions['signOptions']>['expiresIn'],
         },
       }),
     }),

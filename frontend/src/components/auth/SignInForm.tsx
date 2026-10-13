@@ -6,7 +6,7 @@ import Button from "@/components/ui/button/Button";
 import { useAuth } from "@/context/AuthContext";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { useState, type FormEvent } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 
 export default function SignInForm() {
   const { user, login } = useAuth();
@@ -108,6 +108,18 @@ export default function SignInForm() {
               </div>
             </div>
           </form>
+
+          <div className="mt-5">
+            <p className="text-center text-sm font-normal text-gray-700 sm:text-start dark:text-gray-400">
+              Pas encore de compte ?{" "}
+              <Link
+                to="/signup"
+                className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+              >
+                S&apos;inscrire
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
